@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List
 
 class Token(BaseModel):
     access_token: str
@@ -18,14 +18,25 @@ class UserBase(BaseModel):
     password_hash: str
     account_type: str
 
-class UserCreate(UserBase):
-    pass
 
 class User(UserBase):
     user_id: int
+    friendships_requested: Optional[List['FriendshipBase']]
+    friendships_received: Optional[List['FriendshipBase']]
+    user_exercises: Optional[List['UserExerciseBase']]
+    workout_plans: Optional[List['WorkoutPlanBase']]
+    workouts: Optional[List['WorkoutBase']]
 
     class Config:
         from_attributes = True
+
+class UserCreate(BaseModel):
+    name: str
+    email: str
+    password: str
+    height: float
+    weight: float
+    gender: str
 
 class FriendshipBase(BaseModel):
     user1_id: int
@@ -36,6 +47,9 @@ class FriendshipCreate(FriendshipBase):
     pass
 
 class Friendship(FriendshipBase):
+    user1: Optional['User']
+    user2: Optional['User']
+    
     class Config:
         from_attributes = True
 
@@ -50,6 +64,8 @@ class UserExerciseCreate(UserExerciseBase):
 
 class UserExercise(UserExerciseBase):
     user_exercise_id: int
+    user: Optional['User']
+    exercises: Optional[List['Exercise']]
 
     class Config:
         from_attributes = True
@@ -66,6 +82,9 @@ class WorkoutPlanCreate(WorkoutPlanBase):
 class WorkoutPlan(WorkoutPlanBase):
     plan_id: int
 
+    user: Optional['User']
+    workouts: Optional[List['Workout']]
+
     class Config:
         from_attributes = True
 
@@ -80,6 +99,10 @@ class WorkoutCreate(WorkoutBase):
 
 class Workout(WorkoutBase):
     workout_id: int
+
+    user: Optional['User']
+    workout_plan: Optional['WorkoutPlan']
+    exercises: Optional[List['Exercise']]
 
     class Config:
         from_attributes = True
@@ -99,6 +122,9 @@ class ExerciseCreate(ExerciseBase):
 
 class Exercise(ExerciseBase):
     exercise_id: int
+
+    workout: Optional['Workout']
+    user_exercise: Optional['UserExercise']
 
     class Config:
         from_attributes = True

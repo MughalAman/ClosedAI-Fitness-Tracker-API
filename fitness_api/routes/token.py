@@ -17,7 +17,7 @@ async def login_for_access_token(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     db: Annotated[Session, Depends(db_functions.get_database)],
 ):
-    user = db_functions.authenticate_user(db, form_data.user_email, form_data.password)
+    user = db_functions.authenticate_user(db, form_data.username, form_data.password)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -26,6 +26,6 @@ async def login_for_access_token(
         )
     access_token_expires = timedelta(minutes=SETTINGS.access_token_expire_minutes)
     access_token = db_functions.create_access_token(
-        data={"sub": user.user_email}, expires_delta=access_token_expires
+        data={"sub": user.email}, expires_delta=access_token_expires
     )
-    return {"access_token": access_token, "token_type": "bearer"}, status.HTTP_200_OK
+    return {"access_token": access_token, "token_type": "bearer"}

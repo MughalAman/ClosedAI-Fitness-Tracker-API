@@ -42,7 +42,7 @@ def get_password_hash(password):
 def get_user(db: Session, user_email: str | None = None, user_id: int | None = None):
     try:
         if user_email:
-            return db.query(models.User).filter(models.User.user_email == user_email).first()
+            return db.query(models.User).filter(models.User.email == user_email).first()
         elif user_id:
             return db.query(models.User).filter(models.User.user_id == user_id).first()
         else:
@@ -90,10 +90,10 @@ def generate_friend_code(db: Session):
 def create_user(db: Session, user_data: schemas.UserCreate):
     db_user = models.User(
         name=user_data.name,
-        user_email=user_data.user_email,
+        email=user_data.email,
         height=user_data.height,
         weight=user_data.weight,
-        gender_id = user_data.gender_id,
+        gender=user_data.gender,
         friend_code=generate_friend_code(db),
         password_hash=get_password_hash(user_data.password),
         account_type="USER",
@@ -104,7 +104,7 @@ def create_user(db: Session, user_data: schemas.UserCreate):
         db.commit()
         db.refresh(db_user)
 
-        logger.debug(f"Created user {user_data.user_email}")
+        logger.debug(f"Created user {user_data.email}")
     except Exception as e:
         logger.error(f"Error creating user: {e}")
         db.rollback()

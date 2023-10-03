@@ -1,9 +1,7 @@
 from sqlalchemy import Column, Integer, String, Float, ForeignKey, Date, Enum, Boolean
 from sqlalchemy.orm import relationship
-from sqlalchemy.ext.declarative import declarative_base
 
-Base = declarative_base()
-
+from .database import Base
 
 
 class User(Base):
@@ -17,9 +15,11 @@ class User(Base):
     gender = Column(Enum('MALE', 'FEMALE', 'OTHER'), nullable=False)
     friend_code = Column(String(50), nullable=False, unique=True)
     password_hash = Column(String(500), nullable=False)
-    gender = relationship("Gender", back_populates="users")
     account_type = Column(Enum('ADMIN', 'USER'), nullable=False)
-    friendships = relationship("Friendship", back_populates="user1")
+    disabled = Column(Boolean, nullable=False, default=False)
+    
+    friendships_requested = relationship("Friendship", foreign_keys="[Friendship.user1_id]", back_populates="user1")
+    friendships_received = relationship("Friendship", foreign_keys="[Friendship.user2_id]", back_populates="user2")
     user_exercises = relationship("UserExercise", back_populates="user")
     workout_plans = relationship("WorkoutPlan", back_populates="user")
     workouts = relationship("Workout", back_populates="user")
@@ -32,8 +32,8 @@ class Friendship(Base):
     user2_id = Column(Integer, ForeignKey("user.user_id"), primary_key=True)
     status = Column(Enum("PENDING", "ACCEPTED"), nullable=False)
 
-    user1 = relationship("User", back_populates="friendships")
-    user2 = relationship("User", foreign_keys=[user2_id])
+    user1 = relationship("User", foreign_keys=[user1_id], back_populates="friendships_requested")
+    user2 = relationship("User", foreign_keys=[user2_id], back_populates="friendships_received")
 
 
 class UserExercise(Base):
