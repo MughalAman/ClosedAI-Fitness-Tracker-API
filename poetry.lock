@@ -8,10 +8,6 @@
 name = "alabaster"
 version = "0.7.13"
 description = "A configurable sidebar-enabled Sphinx theme"
-<<<<<<< HEAD
-=======
-category = "dev"
->>>>>>> 8dc8c9bd19ad738fc10ca2fdbb8293ddb0fa1a95
 optional = false
 python-versions = ">=3.6"
 files = [
