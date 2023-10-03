@@ -127,4 +127,6 @@ The API uses environment variables to configure the API.
 FITNESS_API_DB_CONNECTION_STRING=postgresql+psycopg2://username:password@host/dbname
 FITNESS_API_DEBUG_LOGGING=True # set to true to enable debug logging (default: false)
 FITNESS_API_CORS_ORIGINS=["https://fitnessapp.com"] # sets cors origins defaults to allow all if not given
+FITNESS_API_SECRET_KEY="secret"
+FITNESS_API_ACCESS_TOKEN_EXPIRE_MINUTES=5
 ```
