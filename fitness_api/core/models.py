@@ -4,13 +4,6 @@ from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
 
-class Gender(Base):
-    __tablename__ = 'gender'
-    
-    gender_id = Column(Integer, primary_key=True, autoincrement=True)
-    name = Column(String(50), nullable=False)
-    
-    users = relationship("User", back_populates="gender")
 
 class User(Base):
     __tablename__ = 'user'
@@ -18,14 +11,13 @@ class User(Base):
     user_id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(50), nullable=False)
     email = Column(String(255), nullable=False, unique=True)
-    password_hash = Column(String(500), nullable=False)
-    auth_token = Column(String(500), nullable=False)
     height = Column(Float, nullable=False)
     weight = Column(Float, nullable=False)
-    gender_id = Column(Integer, ForeignKey('gender.gender_id'), nullable=False)
+    gender = Column(Enum('MALE', 'FEMALE', 'OTHER'), nullable=False)
     friend_code = Column(String(50), nullable=False, unique=True)
-    
+    password_hash = Column(String(500), nullable=False)
     gender = relationship("Gender", back_populates="users")
+    account_type = Column(Enum('ADMIN', 'USER'), nullable=False)
     friendships = relationship("Friendship", back_populates="user1")
     user_exercises = relationship("UserExercise", back_populates="user")
     workout_plans = relationship("WorkoutPlan", back_populates="user")
@@ -39,6 +31,7 @@ class Friendship(Base):
     status = Column(Enum('PENDING', 'ACCEPTED'), nullable=False)
     
     user1 = relationship("User", back_populates="friendships")
+    user2 = relationship("User", foreign_keys=[user2_id])
 
 class UserExercise(Base):
     __tablename__ = 'user_exercise'
@@ -81,14 +74,14 @@ class Exercise(Base):
     __tablename__ = 'exercise'
     
     exercise_id = Column(Integer, primary_key=True, autoincrement=True)
-    user_exercise_id = Column(Integer, ForeignKey('user_exercise.user_exercise_id'))
+    user_exercise_id = Column(Integer, ForeignKey('user_exercise.user_exercise_id'), nullable=True)
     set = Column(Integer, nullable=False)
     repetition = Column(Integer, nullable=False)
     rating = Column(Float, nullable=False)
     duration = Column(Integer, nullable=False)
     weight = Column(Float)
     rpe = Column(Integer)
-    workout_id = Column(Integer, ForeignKey('workout.workout_id'), nullable=False)
+    workout_id = Column(Integer, ForeignKey('workout.workout_id'), nullable=True)
     
     workout = relationship("Workout", back_populates="exercises")
     user_exercise = relationship("UserExercise", back_populates="exercises")
