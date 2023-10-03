@@ -5,9 +5,10 @@ from sqlalchemy.ext.declarative import declarative_base
 Base = declarative_base()
 
 
+
 class User(Base):
-    __tablename__ = 'user'
-    
+    __tablename__ = "user"
+
     user_id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(50), nullable=False)
     email = Column(String(255), nullable=False, unique=True)
@@ -23,56 +24,61 @@ class User(Base):
     workout_plans = relationship("WorkoutPlan", back_populates="user")
     workouts = relationship("Workout", back_populates="user")
 
+
 class Friendship(Base):
-    __tablename__ = 'friendship'
-    
-    user1_id = Column(Integer, ForeignKey('user.user_id'), primary_key=True)
-    user2_id = Column(Integer, ForeignKey('user.user_id'), primary_key=True)
-    status = Column(Enum('PENDING', 'ACCEPTED'), nullable=False)
-    
+    __tablename__ = "friendship"
+
+    user1_id = Column(Integer, ForeignKey("user.user_id"), primary_key=True)
+    user2_id = Column(Integer, ForeignKey("user.user_id"), primary_key=True)
+    status = Column(Enum("PENDING", "ACCEPTED"), nullable=False)
+
     user1 = relationship("User", back_populates="friendships")
     user2 = relationship("User", foreign_keys=[user2_id])
 
+
 class UserExercise(Base):
-    __tablename__ = 'user_exercise'
-    
+    __tablename__ = "user_exercise"
+
     user_exercise_id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(50), nullable=False)
     description = Column(String(500))
     video_url = Column(String(500))
-    user_id = Column(Integer, ForeignKey('user.user_id'), nullable=False)
-    
+    user_id = Column(Integer, ForeignKey("user.user_id"), nullable=False)
+
     user = relationship("User", back_populates="user_exercises")
     exercises = relationship("Exercise", back_populates="user_exercise")
 
+
 class WorkoutPlan(Base):
-    __tablename__ = 'workout_plan'
-    
+    __tablename__ = "workout_plan"
+
     plan_id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(500), nullable=False)
     is_private = Column(Boolean, nullable=False)
     workout_days = Column(String(7))
-    user_id = Column(Integer, ForeignKey('user.user_id'), nullable=False)
-    
+    user_id = Column(Integer, ForeignKey("user.user_id"), nullable=False)
+
     user = relationship("User", back_populates="workout_plans")
     workouts = relationship("Workout", back_populates="workout_plan")
 
+
 class Workout(Base):
-    __tablename__ = 'workout'
-    
+    __tablename__ = "workout"
+
     workout_id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(50), nullable=False)
     date = Column(Date, nullable=False)
-    user_id = Column(Integer, ForeignKey('user.user_id'), nullable=False)
-    plan_id = Column(Integer, ForeignKey('workout_plan.plan_id'))
-    
+    user_id = Column(Integer, ForeignKey("user.user_id"), nullable=False)
+    plan_id = Column(Integer, ForeignKey("workout_plan.plan_id"))
+
     user = relationship("User", back_populates="workouts")
     workout_plan = relationship("WorkoutPlan", back_populates="workouts")
     exercises = relationship("Exercise", back_populates="workout")
 
+
 class Exercise(Base):
-    __tablename__ = 'exercise'
-    
+    __tablename__ = "exercise"
+
     exercise_id = Column(Integer, primary_key=True, autoincrement=True)
     user_exercise_id = Column(Integer, ForeignKey('user_exercise.user_exercise_id'), nullable=True)
     set = Column(Integer, nullable=False)
