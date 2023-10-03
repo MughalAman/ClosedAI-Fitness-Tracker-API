@@ -43,8 +43,9 @@ class FriendshipBase(BaseModel):
     user2_id: int
     status: str
 
-class FriendshipCreate(FriendshipBase):
-    pass
+class FriendshipCreate(BaseModel):
+    requestor_friend_code: int
+    receiver_friend_code: int
 
 class Friendship(FriendshipBase):
     user1: Optional['User']

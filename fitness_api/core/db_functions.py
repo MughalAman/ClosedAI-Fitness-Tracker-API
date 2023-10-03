@@ -143,17 +143,35 @@ def delete_user(db: Session, user_id: int):
 
 
 def create_friendship(db: Session, friendship: schemas.FriendshipCreate):
-    db_friendship = models.Friendship(**friendship.model_dump())
+    db_requestor = db.query(models.User).filter(models.User.friend_code == friendship.requestor_friend_code).first()
+    db_receiver = db.query(models.User).filter(models.User.friend_code == friendship.receiver_friend_code).first()
+
+    if not db_requestor:
+        logger.debug(f"Requestor friend code {friendship.requestor_friend_code} does not exist")
+        raise Exception(f"Requestor friend code {friendship.requestor_friend_code} does not exist")
+    
+    if not db_receiver:
+        logger.debug(f"Receiver friend code {friendship.receiver_friend_code} does not exist")
+        raise Exception(f"Receiver friend code {friendship.receiver_friend_code} does not exist")
+    
+    db_friendship = models.Friendship(
+        user1_id=db_requestor.user_id,
+        user2_id=db_receiver.user_id,
+        status="PENDING",
+    )
+
     try:
         db.add(db_friendship)
         db.commit()
         db.refresh(db_friendship)
-        logger.debug(f"Created friendship between {friendship.user1_id} and {friendship.user2_id}")
+        logger.debug(f"Created friendship between {db_requestor.user_id} and {db_receiver.user_id}")
     except Exception as e:
-        logger.error(f"Error creating friendship: {e}")
+        logger.error(f"Error creating friendship between {db_requestor.user_id} and {db_receiver.user_id}: {e}")
         db.rollback()
         raise e
+    
     return db_friendship
+
 
 def get_friendship(db: Session, user1_id: int, user2_id: int):
     try:
