@@ -21,11 +21,6 @@ class UserBase(BaseModel):
 
 class User(UserBase):
     user_id: int
-    friendships_requested: Optional[List['FriendshipBase']]
-    friendships_received: Optional[List['FriendshipBase']]
-    user_exercises: Optional[List['UserExerciseBase']]
-    workout_plans: Optional[List['WorkoutPlanBase']]
-    workouts: Optional[List['WorkoutBase']]
 
     class Config:
         from_attributes = True
