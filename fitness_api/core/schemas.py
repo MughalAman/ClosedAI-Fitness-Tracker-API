@@ -44,8 +44,8 @@ class FriendshipBase(BaseModel):
     status: str
 
 class FriendshipCreate(BaseModel):
-    requestor_friend_code: int
-    receiver_friend_code: int
+    requestor_friend_code: str
+    receiver_friend_code: str
 
 class Friendship(FriendshipBase):
     user1: Optional['User']

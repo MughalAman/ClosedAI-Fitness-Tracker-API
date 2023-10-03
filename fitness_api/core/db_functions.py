@@ -211,7 +211,6 @@ def delete_friendship(db: Session, user1_id: int, user2_id: int):
         logger.error(f"Error deleting friendship between {user1_id} and {user2_id}: {e}")
         db.rollback()
         raise e
-    return db_friendship
 
 
 
