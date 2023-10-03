@@ -15,7 +15,7 @@ router = APIRouter()
 @router.post("/token", response_model=schemas.Token)
 async def login_for_access_token(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
-    db: Annotated[Session, Depends(db_functions.get_database())],
+    db: Annotated[Session, Depends(db_functions.get_database)],
 ):
     user = db_functions.authenticate_user(db, form_data.user_email, form_data.password)
     if not user:

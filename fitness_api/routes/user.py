@@ -12,7 +12,7 @@ router = APIRouter()
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
-async def get_current_user(db: Annotated[Session, Depends(db_functions.get_database())], 
+async def get_current_user(db: Annotated[Session, Depends(db_functions.get_database)], 
                            token: Annotated[str, Depends(oauth2_scheme)]):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -42,7 +42,7 @@ async def get_current_active_user(
 
 
 @router.post("/user/", response_model=schemas.User)
-def create_user(user: schemas.UserCreate, db: Session = Depends(db_functions.get_database())):
+def create_user(user: schemas.UserCreate, db: Session = Depends(db_functions.get_database)):
     db_user = db_functions.get_user(db, user_email=user.email)
     if db_user:
         raise HTTPException(status_code=400, detail="Email already registered")
@@ -51,7 +51,7 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(db_functions.get
 
 @router.get("/user/me", response_model=schemas.User)
 def read_user(current_user: schemas.User = Depends(get_current_active_user), 
-              db: Session = Depends(db_functions.get_database())):
+              db: Session = Depends(db_functions.get_database)):
     db_user = db_functions.get_user(db, user_id=current_user.id)
     if db_user is None:
         raise HTTPException(status_code=404, detail="User not found")
@@ -61,7 +61,7 @@ def read_user(current_user: schemas.User = Depends(get_current_active_user),
 @router.put("/user/{user_id}", response_model=schemas.User)
 def update_user(user: schemas.UserCreate, 
                 current_user: schemas.User = Depends(get_current_active_user), 
-                db: Session = Depends(db_functions.get_database())):
+                db: Session = Depends(db_functions.get_database)):
     
     db_user = db_functions.update_user(db, current_user.user_id, user)
     if db_user is None:
@@ -71,7 +71,7 @@ def update_user(user: schemas.UserCreate,
 
 @router.delete("/user/{user_id}", response_model=schemas.User)
 def delete_user(current_user: schemas.User = Depends(get_current_active_user),
-                db: Session = Depends(db_functions.get_database())):
+                db: Session = Depends(db_functions.get_database)):
     db_user = db_functions.delete_user(db, current_user.user_id)
     if db_user is None:
         raise HTTPException(status_code=404, detail="User not found")

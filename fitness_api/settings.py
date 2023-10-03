@@ -5,9 +5,9 @@ class Settings(BaseSettings):
     db_connection_string: str = "sqlite:///./test.db"
     debug_logging: bool = False
     cors_origins: list[str] = ["*"]
-    secret_key = ""
-    algorithm = "HS256"
-    access_token_expire_minutes = 30
+    secret_key: str = ""
+    algorithm:str = "HS256"
+    access_token_expire_minutes:int = 30
 
     class Config:
         env_file = ".env"

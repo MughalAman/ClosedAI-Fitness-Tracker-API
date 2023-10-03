@@ -25,7 +25,7 @@ class User(UserBase):
     user_id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class FriendshipBase(BaseModel):
     user1_id: int
@@ -37,7 +37,7 @@ class FriendshipCreate(FriendshipBase):
 
 class Friendship(FriendshipBase):
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class UserExerciseBase(BaseModel):
     name: str
@@ -52,7 +52,7 @@ class UserExercise(UserExerciseBase):
     user_exercise_id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class WorkoutPlanBase(BaseModel):
     name: str
@@ -67,7 +67,7 @@ class WorkoutPlan(WorkoutPlanBase):
     plan_id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class WorkoutBase(BaseModel):
     name: str
@@ -82,7 +82,7 @@ class Workout(WorkoutBase):
     workout_id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class ExerciseBase(BaseModel):
     user_exercise_id: Optional[int]
@@ -101,4 +101,4 @@ class Exercise(ExerciseBase):
     exercise_id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True
