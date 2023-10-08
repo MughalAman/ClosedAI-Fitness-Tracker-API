@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from typing import Optional, List
+from datetime import date
 
 
 class Token(BaseModel):
@@ -57,7 +58,7 @@ class Exercise(ExerciseBase):
 
 class WorkoutBase(BaseModel):
     name: str
-    date: Optional[str]
+    date: Optional[date]
     user_id: int
 
 
