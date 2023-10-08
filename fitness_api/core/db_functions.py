@@ -58,9 +58,11 @@ def authenticate_user(db: Session, user_email: str, password: str):
         logger.debug(f"User {user_email} attempted to log in but does not exist")
         return False
     if not verify_password(password, user.password_hash):
-        logger.debug(f"User {user_email} attempted to log in with an incorrect password")
+        logger.debug(
+            f"User {user_email} attempted to log in with an incorrect password"
+        )
         return False
-    
+
     logger.debug(f"User {user_email} successfully logged in")
     return user
 
@@ -72,15 +74,23 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
     else:
         expire = datetime.utcnow() + timedelta(minutes=15)
     to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SETTINGS.secret_key, algorithm=SETTINGS.algorithm)
+    encoded_jwt = jwt.encode(
+        to_encode, SETTINGS.secret_key, algorithm=SETTINGS.algorithm
+    )
     return encoded_jwt
 
 
 def generate_friend_code(db: Session):
     friend_code = ""
     while True:
-        friend_code = "".join(random.choices(string.ascii_uppercase + string.digits, k=6))
-        if not db.query(models.User).filter(models.User.friend_code == friend_code).first():
+        friend_code = "".join(
+            random.choices(string.ascii_uppercase + string.digits, k=6)
+        )
+        if (
+            not db.query(models.User)
+            .filter(models.User.friend_code == friend_code)
+            .first()
+        ):
             logger.debug(f"Generated friend code {friend_code}")
             break
         logger.debug(f"Friend code {friend_code} already exists, generating another")
@@ -128,7 +138,6 @@ def update_user(db: Session, user_id: int, user: schemas.UserCreate):
     return db_user
 
 
-
 def delete_user(db: Session, user_id: int):
     db_user = get_user(db, user_id=user_id)
     try:
@@ -143,17 +152,33 @@ def delete_user(db: Session, user_id: int):
 
 
 def create_friendship(db: Session, friendship: schemas.FriendshipCreate):
-    db_requestor = db.query(models.User).filter(models.User.friend_code == friendship.requestor_friend_code).first()
-    db_receiver = db.query(models.User).filter(models.User.friend_code == friendship.receiver_friend_code).first()
+    db_requestor = (
+        db.query(models.User)
+        .filter(models.User.friend_code == friendship.requestor_friend_code)
+        .first()
+    )
+    db_receiver = (
+        db.query(models.User)
+        .filter(models.User.friend_code == friendship.receiver_friend_code)
+        .first()
+    )
 
     if not db_requestor:
-        logger.debug(f"Requestor friend code {friendship.requestor_friend_code} does not exist")
-        raise Exception(f"Requestor friend code {friendship.requestor_friend_code} does not exist")
-    
+        logger.debug(
+            f"Requestor friend code {friendship.requestor_friend_code} does not exist"
+        )
+        raise Exception(
+            f"Requestor friend code {friendship.requestor_friend_code} does not exist"
+        )
+
     if not db_receiver:
-        logger.debug(f"Receiver friend code {friendship.receiver_friend_code} does not exist")
-        raise Exception(f"Receiver friend code {friendship.receiver_friend_code} does not exist")
-    
+        logger.debug(
+            f"Receiver friend code {friendship.receiver_friend_code} does not exist"
+        )
+        raise Exception(
+            f"Receiver friend code {friendship.receiver_friend_code} does not exist"
+        )
+
     db_friendship = models.Friendship(
         user1_id=db_requestor.user_id,
         user2_id=db_receiver.user_id,
@@ -164,12 +189,16 @@ def create_friendship(db: Session, friendship: schemas.FriendshipCreate):
         db.add(db_friendship)
         db.commit()
         db.refresh(db_friendship)
-        logger.debug(f"Created friendship between {db_requestor.user_id} and {db_receiver.user_id}")
+        logger.debug(
+            f"Created friendship between {db_requestor.user_id} and {db_receiver.user_id}"
+        )
     except Exception as e:
-        logger.error(f"Error creating friendship between {db_requestor.user_id} and {db_receiver.user_id}: {e}")
+        logger.error(
+            f"Error creating friendship between {db_requestor.user_id} and {db_receiver.user_id}: {e}"
+        )
         db.rollback()
         raise e
-    
+
     return db_friendship
 
 
@@ -177,15 +206,22 @@ def get_friendship(db: Session, user1_id: int, user2_id: int):
     try:
         return (
             db.query(models.Friendship)
-            .filter(models.Friendship.user1_id == user1_id, models.Friendship.user2_id == user2_id)
-            .first()
+            .filter(
+                models.Friendship.user1_id == user1_id,
+                models.Friendship.user2_id == user2_id,
             )
+            .first()
+        )
     except Exception as e:
-        logger.error(f"Error fetching friendship between {user1_id} and {user2_id}: {e}")
+        logger.error(
+            f"Error fetching friendship between {user1_id} and {user2_id}: {e}"
+        )
         raise e
 
 
-def update_friendship(db: Session, user1_id: int, user2_id: int, friendship: schemas.FriendshipCreate):
+def update_friendship(
+    db: Session, user1_id: int, user2_id: int, friendship: schemas.FriendshipCreate
+):
     db_friendship = get_friendship(db, user1_id, user2_id)
     try:
         for key, value in friendship.model_dump().items():
@@ -194,11 +230,12 @@ def update_friendship(db: Session, user1_id: int, user2_id: int, friendship: sch
         db.refresh(db_friendship)
         logger.debug(f"Updated friendship between {user1_id} and {user2_id}")
     except Exception as e:
-        logger.error(f"Error updating friendship between {user1_id} and {user2_id}: {e}")
+        logger.error(
+            f"Error updating friendship between {user1_id} and {user2_id}: {e}"
+        )
         db.rollback()
         raise e
     return db_friendship
-
 
 
 def delete_friendship(db: Session, user1_id: int, user2_id: int):
@@ -208,112 +245,11 @@ def delete_friendship(db: Session, user1_id: int, user2_id: int):
         db.commit()
         logger.debug(f"Deleted friendship between {user1_id} and {user2_id}")
     except Exception as e:
-        logger.error(f"Error deleting friendship between {user1_id} and {user2_id}: {e}")
+        logger.error(
+            f"Error deleting friendship between {user1_id} and {user2_id}: {e}"
+        )
         db.rollback()
         raise e
-
-
-
-def create_user_exercise(db: Session, user_exercise: schemas.UserExerciseCreate):
-    db_user_exercise = models.UserExercise(**user_exercise.model_dump())
-    try:
-        db.add(db_user_exercise)
-        db.commit()
-        db.refresh(db_user_exercise)
-        logger.debug(f"Created user exercise {db_user_exercise.user_exercise_id}")
-    except Exception as e:
-        logger.error(f"Error creating user exercise: {e}")
-        db.rollback()
-        raise e
-    return db_user_exercise
-
-
-def get_user_exercise(db: Session, user_exercise_id: int):
-    try:
-        return db.query(models.UserExercise).filter(models.UserExercise.user_exercise_id == user_exercise_id).first()
-    except Exception as e:
-        logger.error(f"Error fetching user exercise with id {user_exercise_id}: {e}")
-        raise e
-
-
-def update_user_exercise(db: Session, user_exercise_id: int, user_exercise: schemas.UserExerciseCreate):
-    db_user_exercise = get_user_exercise(db, user_exercise_id)
-    try:
-        for key, value in user_exercise.model_dump().items():
-            setattr(db_user_exercise, key, value)
-        db.commit()
-        db.refresh(db_user_exercise)
-        logger.debug(f"Updated user exercise {user_exercise_id}")
-    except Exception as e:
-        logger.error(f"Error updating user exercise {user_exercise_id}: {e}")
-        db.rollback()
-        raise e
-    return db_user_exercise
-
-
-
-def delete_user_exercise(db: Session, user_exercise_id: int):
-    db_user_exercise = get_user_exercise(db, user_exercise_id)
-    try:
-        db.delete(db_user_exercise)
-        db.commit()
-        logger.debug(f"Deleted user exercise {user_exercise_id}")
-    except Exception as e:
-        logger.error(f"Error deleting user exercise {user_exercise_id}: {e}")
-        db.rollback()
-        raise e
-    return db_user_exercise
-
-
-def create_workout_plan(db: Session, workout_plan: schemas.WorkoutPlanCreate):
-    db_workout_plan = models.WorkoutPlan(**workout_plan.model_dump())
-    try:
-        db.add(db_workout_plan)
-        db.commit()
-        db.refresh(db_workout_plan)
-        logger.debug(f"Created workout plan {db_workout_plan.plan_id}")
-    except Exception as e:
-        logger.error(f"Error creating workout plan: {e}")
-        db.rollback()
-        raise e
-    return db_workout_plan
-
-
-def get_workout_plan(db: Session, plan_id: int):
-    try:
-        return db.query(models.WorkoutPlan).filter(models.WorkoutPlan.plan_id == plan_id).first()
-    except Exception as e:
-        logger.error(f"Error fetching workout plan with id {plan_id}: {e}")
-        raise e
-
-
-def update_workout_plan(db: Session, plan_id: int, workout_plan: schemas.WorkoutPlanCreate):
-    db_workout_plan = get_workout_plan(db, plan_id)
-    try:
-        for key, value in workout_plan.model_dump().items():
-            setattr(db_workout_plan, key, value)
-        db.commit()
-        db.refresh(db_workout_plan)
-        logger.debug(f"Updated workout plan {plan_id}")
-    except Exception as e:
-        logger.error(f"Error updating workout plan {plan_id}: {e}")
-        db.rollback()
-        raise e
-    return db_workout_plan
-
-
-def delete_workout_plan(db: Session, plan_id: int):
-    db_workout_plan = get_workout_plan(db, plan_id)
-    try:
-        db.delete(db_workout_plan)
-        db.commit()
-        logger.debug(f"Deleted workout plan {plan_id}")
-    except Exception as e:
-        logger.error(f"Error deleting workout plan {plan_id}: {e}")
-        db.rollback()
-        raise e
-    return db_workout_plan
-
 
 
 def create_workout(db: Session, workout: schemas.WorkoutCreate):
@@ -332,7 +268,11 @@ def create_workout(db: Session, workout: schemas.WorkoutCreate):
 
 def get_workout(db: Session, workout_id: int):
     try:
-        return db.query(models.Workout).filter(models.Workout.workout_id == workout_id).first()
+        return (
+            db.query(models.Workout)
+            .filter(models.Workout.workout_id == workout_id)
+            .first()
+        )
     except Exception as e:
         logger.error(f"Error fetching workout with id {workout_id}: {e}")
         raise e
@@ -373,6 +313,7 @@ def create_exercise(db: Session, exercise: schemas.ExerciseCreate):
         db.commit()
         db.refresh(db_exercise)
         logger.debug(f"Created exercise {db_exercise.exercise_id}")
+        return db_exercise
     except Exception as e:
         logger.error(f"Error creating exercise: {e}")
         db.rollback()
@@ -381,7 +322,11 @@ def create_exercise(db: Session, exercise: schemas.ExerciseCreate):
 
 def get_exercise(db: Session, exercise_id: int):
     try:
-        return db.query(models.Exercise).filter(models.Exercise.exercise_id == exercise_id).first()
+        return (
+            db.query(models.Exercise)
+            .filter(models.Exercise.exercise_id == exercise_id)
+            .first()
+        )
     except Exception as e:
         logger.error(f"Error fetching exercise with id {exercise_id}: {e}")
         raise e
@@ -400,7 +345,6 @@ def update_exercise(db: Session, exercise_id: int, exercise: schemas.ExerciseCre
         db.rollback()
         raise e
     return db_exercise
-
 
 
 def delete_exercise(db: Session, exercise_id: int):
