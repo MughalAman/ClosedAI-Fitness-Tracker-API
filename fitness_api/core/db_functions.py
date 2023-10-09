@@ -182,8 +182,6 @@ def create_friendship(db: Session, friendship: schemas.FriendshipCreate):
     db_friendship = models.Friendship(
         user1_id=db_requestor.user_id,
         user2_id=db_receiver.user_id,
-        requestor_friend_code=friendship.requestor_friend_code,
-        receiver_friend_code=friendship.receiver_friend_code,
         status="PENDING",
     )
 

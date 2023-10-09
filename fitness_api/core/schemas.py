@@ -109,8 +109,6 @@ class UserCreate(BaseModel):
 class FriendshipBase(BaseModel):
     user1_id: int
     user2_id: int
-    requestor_friend_code: str
-    receiver_friend_code: str
     status: str
 
 
