@@ -358,3 +358,55 @@ def delete_exercise(db: Session, exercise_id: int):
         db.rollback()
         raise e
     return db_exercise
+
+
+def create_rating(db: Session, rating: schemas.RatingCreate):
+    db_rating = models.Rating(**rating.model_dump())
+    try:
+        db.add(db_rating)
+        db.commit()
+        db.refresh(db_rating)
+        logger.debug(f"Created rating {db_rating.rating_id}")
+    except Exception as e:
+        logger.error(f"Error creating rating: {e}")
+        db.rollback()
+        raise e
+    return db_rating
+
+
+def get_rating(db: Session, rating_id: int):
+    try:
+        return (
+            db.query(models.Rating).filter(models.Rating.rating_id == rating_id).first()
+        )
+    except Exception as e:
+        logger.error(f"Error fetching rating with id {rating_id}: {e}")
+        raise e
+
+
+def update_rating(db: Session, rating_id: int, rating: schemas.RatingCreate):
+    db_rating = get_rating(db, rating_id)
+    try:
+        for key, value in rating.model_dump().items():
+            setattr(db_rating, key, value)
+        db.commit()
+        db.refresh(db_rating)
+        logger.debug(f"Updated rating {rating_id}")
+    except Exception as e:
+        logger.error(f"Error updating rating {rating_id}: {e}")
+        db.rollback()
+        raise e
+    return db_rating
+
+
+def delete_rating(db: Session, rating_id: int):
+    db_rating = get_rating(db, rating_id)
+    try:
+        db.delete(db_rating)
+        db.commit()
+        logger.debug(f"Deleted rating {rating_id}")
+    except Exception as e:
+        logger.error(f"Error deleting rating {rating_id}: {e}")
+        db.rollback()
+        raise e
+    return db_rating
