@@ -89,8 +89,8 @@ class UserBase(BaseModel):
 
 class User(UserBase):
     user_id: int
-    friendships_requested: Optional[List["Friendship"]]
-    friendships_received: Optional[List["Friendship"]]
+    friendships_requested: Optional[List["FriendshipBase"]]
+    friendships_received: Optional[List["FriendshipBase"]]
     workouts: Optional[List["Workout"]]
 
     class Config:
