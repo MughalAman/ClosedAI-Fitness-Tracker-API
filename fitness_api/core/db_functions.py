@@ -202,20 +202,30 @@ def create_friendship(db: Session, friendship: schemas.FriendshipCreate):
     return db_friendship
 
 
-def get_friendship(db: Session, user1_id: int, user2_id: int):
+def get_friendship(db: Session, friend_code_1: str, friend_code_2: str):
     try:
         return (
             db.query(models.Friendship)
             .filter(
-                models.Friendship.user1_id == user1_id,
-                models.Friendship.user2_id == user2_id,
+                models.Friendship.user1_id
+                == (
+                    db.query(models.User)
+                    .filter(models.User.friend_code == friend_code_1)
+                    .first()
+                    .user_id
+                ),
+                models.Friendship.user2_id
+                == (
+                    db.query(models.User)
+                    .filter(models.User.friend_code == friend_code_2)
+                    .first()
+                    .user_id
+                ),
             )
             .first()
         )
     except Exception as e:
-        logger.error(
-            f"Error fetching friendship between {user1_id} and {user2_id}: {e}"
-        )
+        logger.error(f"Error fetching friendship between users: {e}")
         raise e
 
 
