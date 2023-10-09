@@ -33,6 +33,8 @@ class Friendship(Base):
 
     user1_id = Column(Integer, ForeignKey("user.user_id"), primary_key=True)
     user2_id = Column(Integer, ForeignKey("user.user_id"), primary_key=True)
+    requestor_friend_code = Column(String(50), nullable=False)
+    receiver_friend_code = Column(String(50), nullable=False)
     status = Column(Enum("PENDING", "ACCEPTED"), nullable=False)
 
     user1 = relationship(
