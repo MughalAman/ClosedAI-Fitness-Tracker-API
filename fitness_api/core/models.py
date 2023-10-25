@@ -1,7 +1,12 @@
 from sqlalchemy import Column, Integer, String, Float, ForeignKey, Date, Enum, Boolean
 from sqlalchemy.orm import relationship
+from sqlalchemy.dialects.postgresql import ENUM
 
 from .database import Base
+
+gender_enum = ENUM("MALE", "FEMALE", "OTHER", name="gender_enum_type")
+account_type_enum = ENUM("ADMIN", "USER", name="account_type_enum")
+status_enum = ENUM("PENDING", "ACCEPTED", name="status_enum_type")
 
 
 class User(Base):
@@ -12,10 +17,10 @@ class User(Base):
     email = Column(String(255), nullable=False, unique=True)
     height = Column(Float, nullable=False)
     weight = Column(Float, nullable=False)
-    gender = Column(Enum("MALE", "FEMALE", "OTHER"), nullable=False)
+    gender = Column(gender_enum, nullable=False)
     friend_code = Column(String(50), nullable=False, unique=True)
     password_hash = Column(String(500), nullable=False)
-    account_type = Column(Enum("ADMIN", "USER"), nullable=False)
+    account_type = Column(account_type_enum, nullable=False)
     disabled = Column(Boolean, nullable=False, default=False)
     extra_data = Column(String(1000))
 
@@ -33,7 +38,7 @@ class Friendship(Base):
 
     user1_id = Column(Integer, ForeignKey("user.user_id"), primary_key=True)
     user2_id = Column(Integer, ForeignKey("user.user_id"), primary_key=True)
-    status = Column(Enum("PENDING", "ACCEPTED"), nullable=False)
+    status = Column(status_enum, nullable=False)
 
     user1 = relationship(
         "User", foreign_keys=[user1_id], back_populates="friendships_requested"
