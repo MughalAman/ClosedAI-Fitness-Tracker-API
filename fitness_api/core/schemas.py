@@ -1,6 +1,23 @@
 from pydantic import BaseModel
 from typing import Optional, List
+from enum import Enum
 from datetime import date
+
+
+class GenderEnum(str, Enum):
+    MALE = "MALE"
+    FEMALE = "FEMALE"
+    OTHER = "OTHER"
+
+
+class AccountTypeEnum(str, Enum):
+    ADMIN = "ADMIN"
+    USER = "USER"
+
+
+class StatusEnum(str, Enum):
+    PENDING = "PENDING"
+    ACCEPTED = "ACCEPTED"
 
 
 class Token(BaseModel):
@@ -80,17 +97,15 @@ class UserBase(BaseModel):
     email: str
     height: float
     weight: float
-    gender: str
+    gender: GenderEnum
     friend_code: str
-    password_hash: str
-    account_type: str
-    extra_data: Optional[str]
+    account_type: AccountTypeEnum
+    disabled: Optional[bool] = False
+    extra_data: Optional[dict]
 
 
 class User(UserBase):
     user_id: int
-    friendships_requested: Optional[List["FriendshipBase"]]
-    friendships_received: Optional[List["FriendshipBase"]]
     workouts: Optional[List["Workout"]]
 
     class Config:
@@ -106,20 +121,42 @@ class UserCreate(BaseModel):
     gender: str
 
 
+class UserUpdate(BaseModel):
+    name: Optional[str] = None
+    email: Optional[str] = None
+    height: Optional[float] = None
+    weight: Optional[float] = None
+    gender: Optional[str] = None
+    extra_data: Optional[dict] = None
+
+
+class FriendshipStatusBase(BaseModel):
+    name: StatusEnum
+
+
+class FriendshipStatusCreate(FriendshipStatusBase):
+    pass
+
+
+class FriendshipStatusInDB(FriendshipStatusBase):
+    status_id: int
+
+    class Config:
+        from_attributes = True
+
+
 class FriendshipBase(BaseModel):
-    user1_id: int
-    user2_id: int
-    status: str
+    user_id: int
+    friend_id: int
+    status_id: int
 
 
-class FriendshipCreate(BaseModel):
-    requestor_friend_code: str
-    receiver_friend_code: str
+class FriendshipCreate(FriendshipBase):
+    pass
 
 
-class Friendship(FriendshipBase):
-    user1: Optional["User"]
-    user2: Optional["User"]
+class FriendshipInDB(FriendshipBase):
+    friendship_id: int
 
     class Config:
         from_attributes = True

@@ -123,11 +123,12 @@ def create_user(db: Session, user_data: schemas.UserCreate):
     return db_user
 
 
-def update_user(db: Session, user_id: int, user: schemas.UserCreate):
+def update_user(db: Session, user_id: int, user: schemas.UserUpdate):
     db_user = get_user(db, user_id=user_id)
     try:
         for key, value in user.model_dump().items():
-            setattr(db_user, key, value)
+            if value is not None:
+                setattr(db_user, key, value)
         db.commit()
         db.refresh(db_user)
         logger.debug(f"Updated user {user_id}")
@@ -151,115 +152,114 @@ def delete_user(db: Session, user_id: int):
     return db_user
 
 
-def create_friendship(db: Session, friendship: schemas.FriendshipCreate):
-    db_requestor = (
+def get_user_id_from_friend_code(db: Session, friend_code: str):
+    return (
         db.query(models.User)
-        .filter(models.User.friend_code == friendship.requestor_friend_code)
+        .filter(models.User.friend_code == friend_code)
         .first()
-    )
-    db_receiver = (
-        db.query(models.User)
-        .filter(models.User.friend_code == friendship.receiver_friend_code)
-        .first()
+        .user_id
     )
 
-    if not db_requestor:
-        logger.debug(
-            f"Requestor friend code {friendship.requestor_friend_code} does not exist"
-        )
-        raise Exception(
-            f"Requestor friend code {friendship.requestor_friend_code} does not exist"
-        )
 
-    if not db_receiver:
-        logger.debug(
-            f"Receiver friend code {friendship.receiver_friend_code} does not exist"
-        )
-        raise Exception(
-            f"Receiver friend code {friendship.receiver_friend_code} does not exist"
-        )
+def create_friendship_status(db: Session, 
+                             status: schemas.FriendshipStatusCreate) -> models.FriendshipStatus:
+    db_status = models.FriendshipStatus(name=status.name)
+    db.add(db_status)
+    db.commit()
+    db.refresh(db_status)
+    return db_status
 
+
+def update_friendship_status(db: Session, 
+                             status_id: int, new_status: schemas.FriendshipStatusCreate) -> models.FriendshipStatus:
+    db_status = db.query(models.FriendshipStatus).filter(models.FriendshipStatus.status_id == status_id).first()
+    if not db_status:
+        return None  # Or raise an appropriate exception
+    db_status.name = new_status.name
+    db.commit()
+    db.refresh(db_status)
+    return db_status
+
+
+def get_friendship_status(db: Session, status_id: int):
+    return (
+        db.query(models.FriendshipStatus)
+        .filter(models.FriendshipStatus.status_id == status_id)
+        .first()
+    )
+
+
+def get_all_friendship_statuses(db: Session):
+    return db.query(models.FriendshipStatus).all()
+
+
+def delete_friendship_status(db: Session, status_id: int):
+    status = (
+        db.query(models.FriendshipStatus)
+        .filter(models.FriendshipStatus.status_id == status_id)
+        .first()
+    )
+    db.delete(status)
+    db.commit()
+
+
+def create_friendship(db: Session, friendship: schemas.FriendshipCreate) -> models.Friendship:
     db_friendship = models.Friendship(
-        user1_id=db_requestor.user_id,
-        user2_id=db_receiver.user_id,
-        status="PENDING",
+        user_id=friendship.user_id,
+        friend_id=friendship.friend_id,
+        status_id=friendship.status_id,
+    )
+    db.add(db_friendship)
+    db.commit()
+    db.refresh(friendship)
+    return friendship
+
+
+def get_friendship(db: Session, friendship_id: int):
+    return (
+        db.query(models.Friendship)
+        .filter(models.Friendship.friendship_id == friendship_id)
+        .first()
     )
 
-    try:
-        db.add(db_friendship)
-        db.commit()
-        db.refresh(db_friendship)
-        logger.debug(
-            f"Created friendship between {db_requestor.user_id} and {db_receiver.user_id}"
-        )
-    except Exception as e:
-        logger.error(
-            f"Error creating friendship between {db_requestor.user_id} and {db_receiver.user_id}: {e}"
-        )
-        db.rollback()
-        raise e
 
+def get_all_friendships(db: Session):
+    return db.query(models.Friendship).all()
+
+
+def get_all_friendships_for_user(db: Session, user_id: int):
+    return (
+        db.query(models.Friendship)
+        .filter(
+            (models.Friendship.user_id == user_id)
+            | (models.Friendship.friend_id == user_id)
+        )
+        .all()
+    )
+
+
+def update_friendships_status(db: Session, 
+                      friendship_id: int, status_id: int) -> models.Friendship:
+    db_friendship = (db.query(models.Friendship)
+                     .filter(models.Friendship.friendship_id == friendship_id).first())
+    
+    if not db_friendship:
+        return None
+    
+    db_friendship.status_id = status_id
+    db.commit()
+    db.refresh(db_friendship)
     return db_friendship
 
 
-def get_friendship(db: Session, friend_code_1: str, friend_code_2: str):
-    try:
-        return (
-            db.query(models.Friendship)
-            .filter(
-                models.Friendship.user1_id
-                == (
-                    db.query(models.User)
-                    .filter(models.User.friend_code == friend_code_1)
-                    .first()
-                    .user_id
-                ),
-                models.Friendship.user2_id
-                == (
-                    db.query(models.User)
-                    .filter(models.User.friend_code == friend_code_2)
-                    .first()
-                    .user_id
-                ),
-            )
-            .first()
-        )
-    except Exception as e:
-        logger.error(f"Error fetching friendship between users: {e}")
-        raise e
-
-
-def update_friendship(
-    db: Session, user1_id: int, user2_id: int, friendship: schemas.FriendshipCreate
-):
-    db_friendship = get_friendship(db, user1_id, user2_id)
-    try:
-        for key, value in friendship.model_dump().items():
-            setattr(db_friendship, key, value)
-        db.commit()
-        db.refresh(db_friendship)
-        logger.debug(f"Updated friendship between {user1_id} and {user2_id}")
-    except Exception as e:
-        logger.error(
-            f"Error updating friendship between {user1_id} and {user2_id}: {e}"
-        )
-        db.rollback()
-        raise e
-    return db_friendship
-
-
-def delete_friendship(db: Session, user1_id: int, user2_id: int):
-    db_friendship = get_friendship(db, user1_id, user2_id)
-    try:
-        db.delete(db_friendship)
-        db.commit()
-        logger.debug(f"Deleted friendship between {user1_id} and {user2_id}")
-    except Exception as e:
-        logger.error(
-            f"Error deleting friendship between {user1_id} and {user2_id}: {e}"
-        )
-        db.rollback()
-        raise e
+def delete_friendship(db: Session, friendship_id: int):
+    friendship = (
+        db.query(models.Friendship)
+        .filter(models.Friendship.friendship_id == friendship_id)
+        .first()
+    )
+    db.delete(friendship)
+    db.commit()
 
 
 def create_workout(db: Session, workout: schemas.WorkoutCreate):

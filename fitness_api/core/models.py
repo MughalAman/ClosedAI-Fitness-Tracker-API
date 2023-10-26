@@ -1,13 +1,11 @@
-from sqlalchemy import Column, Integer, String, Float, ForeignKey, Date, Enum, Boolean
+from sqlalchemy import Column, Integer, String, Float, ForeignKey, Date, Boolean, UniqueConstraint
 from sqlalchemy.orm import relationship
-from sqlalchemy.dialects.postgresql import ENUM
-
+from sqlalchemy.dialects.postgresql import ENUM, JSON
 from .database import Base
 
 gender_enum = ENUM("MALE", "FEMALE", "OTHER", name="gender_enum_type")
 account_type_enum = ENUM("ADMIN", "USER", name="account_type_enum")
 status_enum = ENUM("PENDING", "ACCEPTED", name="status_enum_type")
-
 
 class User(Base):
     __tablename__ = "user"
@@ -22,29 +20,32 @@ class User(Base):
     password_hash = Column(String(500), nullable=False)
     account_type = Column(account_type_enum, nullable=False)
     disabled = Column(Boolean, nullable=False, default=False)
-    extra_data = Column(String(1000))
+    extra_data = Column(JSON)
 
-    friendships_requested = relationship(
-        "Friendship", foreign_keys="[Friendship.user1_id]", back_populates="user1"
-    )
-    friendships_received = relationship(
-        "Friendship", foreign_keys="[Friendship.user2_id]", back_populates="user2"
-    )
     workouts = relationship("Workout", back_populates="user")
+
+# Redesigned Friendship
+class FriendshipStatus(Base):
+    __tablename__ = "friendship_status"
+
+    status_id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(status_enum, nullable=False)
+
+    friendships = relationship("Friendship", back_populates="status")
 
 
 class Friendship(Base):
     __tablename__ = "friendship"
 
-    user1_id = Column(Integer, ForeignKey("user.user_id"), primary_key=True)
-    user2_id = Column(Integer, ForeignKey("user.user_id"), primary_key=True)
-    status = Column(status_enum, nullable=False)
+    friendship_id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey("user.user_id"), nullable=False)
+    friend_id = Column(Integer, ForeignKey("user.user_id"), nullable=False)
+    status_id = Column(Integer, ForeignKey("friendship_status.status_id"), nullable=False)
 
-    user1 = relationship(
-        "User", foreign_keys=[user1_id], back_populates="friendships_requested"
-    )
-    user2 = relationship(
-        "User", foreign_keys=[user2_id], back_populates="friendships_received"
+    status = relationship("FriendshipStatus", back_populates="friendships")
+
+    __table_args__ = (
+        UniqueConstraint('user_id', 'friend_id', name='uq_friendship'),
     )
 
 
@@ -61,6 +62,20 @@ class Workout(Base):
     exercises = relationship("Exercise", back_populates="workout")
 
 
+class Tag(Base):
+    __tablename__ = "tag"
+
+    tag_id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String(50), nullable=False, unique=True)
+
+
+class ExerciseTag(Base):
+    __tablename__ = "exercise_tag"
+
+    exercise_id = Column(Integer, ForeignKey("exercise.exercise_id"), primary_key=True)
+    tag_id = Column(Integer, ForeignKey("tag.tag_id"), primary_key=True)
+
+
 class Exercise(Base):
     __tablename__ = "exercise"
 
@@ -75,9 +90,9 @@ class Exercise(Base):
     weight = Column(Float)
     rpe = Column(Integer)
     workout_id = Column(Integer, ForeignKey("workout.workout_id"), nullable=True)
-    tags = Column(String(500))
 
     workout = relationship("Workout", back_populates="exercises")
+    tags = relationship("Tag", secondary="exercise_tag")
     ratings = relationship("Rating", back_populates="exercise")
 
 
