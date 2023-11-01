@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
 from jose import jwt
 from passlib.context import CryptContext
 
@@ -316,18 +317,34 @@ def delete_workout(db: Session, workout_id: int):
     return db_workout
 
 
-def create_exercise(db: Session, exercise: schemas.ExerciseCreate):
-    try:
-        db_exercise = models.Exercise(**exercise.model_dump())
-        db.add(db_exercise)
-        db.commit()
-        db.refresh(db_exercise)
-        logger.debug(f"Created exercise {db_exercise.exercise_id}")
-        return db_exercise
-    except Exception as e:
-        logger.error(f"Error creating exercise: {e}")
-        db.rollback()
-        raise e
+def create_exercise(db: Session, exercise: schemas.ExerciseCreate) -> models.Exercise:
+    exercise_data = exercise.model_dump()
+
+    tag_names = exercise_data.pop("tags", [])
+    tag_objects = []
+
+    # Check and fetch or create Tag objects
+    for tag_name in tag_names:
+        tag = db.query(models.Tag).filter(models.Tag.name == tag_name).first()
+        if not tag:
+            tag = models.Tag(name=tag_name)
+            db.add(tag)
+            try:
+                db.commit()
+            except IntegrityError:
+                db.rollback()
+                tag = db.query(models.Tag).filter(models.Tag.name == tag_name).first()
+        tag_objects.append(tag)
+
+    new_exercise = models.Exercise(**exercise_data)
+    new_exercise.tags = tag_objects
+
+    db.add(new_exercise)
+    db.commit()
+    db.refresh(new_exercise)
+
+    return new_exercise
+
 
 
 def get_exercise(db: Session, exercise_id: int):
@@ -420,3 +437,40 @@ def delete_rating(db: Session, rating_id: int):
         db.rollback()
         raise e
     return db_rating
+
+
+def create_tag(db: Session, tag: schemas.TagCreate):
+    new_tag = models.Tag(**tag.dict())
+    db.add(new_tag)
+    db.commit()
+    db.refresh(new_tag)
+    return new_tag
+
+
+def get_tag(db: Session, tag_id: int):
+    return db.query(models.Tag).filter(models.Tag.tag_id == tag_id).first()
+
+
+def get_tags(db: Session, skip: int = 0, limit: int = 10):
+    return db.query(models.Tag).offset(skip).limit(limit).all()
+
+
+def update_tag(db: Session, tag_id: int, tag: schemas.TagUpdate):
+    existing_tag = db.query(models.Tag).filter(models.Tag.tag_id == tag_id).first()
+    if not existing_tag:
+        return None
+    for key, value in tag.dict().items():
+        if value is not None:
+            setattr(existing_tag, key, value)
+    db.commit()
+    db.refresh(existing_tag)
+    return existing_tag
+
+
+def delete_tag(db: Session, tag_id: int):
+    tag = db.query(models.Tag).filter(models.Tag.tag_id == tag_id).first()
+    if not tag:
+        return None
+    db.delete(tag)
+    db.commit()
+    return tag

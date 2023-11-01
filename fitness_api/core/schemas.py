@@ -46,6 +46,38 @@ class Rating(RatingBase):
         from_attributes = True
 
 
+# Base schema for Tag
+class TagBase(BaseModel):
+    name: str
+
+    class Config:
+        orm_mode = True
+
+
+class Tag(TagBase):
+    tag_id: int
+
+    class Config:
+        orm_mode = True
+
+
+# Schema for reading (or retrieving) a Tag
+class TagRead(TagBase):
+    tag_id: int
+
+
+# Schema for creating a Tag
+class TagCreate(TagBase):
+    pass
+
+
+# Schema for updating a Tag
+class TagUpdate(BaseModel):
+    name: Optional[str]
+
+    class Config:
+        orm_mode = True
+
 class ExerciseBase(BaseModel):
     name: str
     description: Optional[str]
@@ -57,20 +89,22 @@ class ExerciseBase(BaseModel):
     weight: Optional[float]
     rpe: Optional[int]
     workout_id: Optional[int]
-    tags: Optional[str]
 
 
 class ExerciseCreate(ExerciseBase):
-    pass
+    tags: List[str] = []
 
 
-class Exercise(ExerciseBase):
+class ExerciseUpdate(ExerciseBase):
+    tags: Optional[List[str]]
+
+
+class ExerciseRead(ExerciseBase):
     exercise_id: int
-
-    ratings: Optional[List["Rating"]]
+    tags: List[Tag] = []
 
     class Config:
-        from_attributes = True
+        orm_mode = True
 
 
 class WorkoutBase(BaseModel):
@@ -86,7 +120,7 @@ class WorkoutCreate(WorkoutBase):
 class Workout(WorkoutBase):
     workout_id: int
 
-    exercises: Optional[List["Exercise"]]
+    exercises: Optional[List["ExerciseRead"]]
 
     class Config:
         from_attributes = True
