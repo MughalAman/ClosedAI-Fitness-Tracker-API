@@ -51,14 +51,14 @@ class TagBase(BaseModel):
     name: str
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class Tag(TagBase):
     tag_id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 # Schema for reading (or retrieving) a Tag
@@ -76,7 +76,8 @@ class TagUpdate(BaseModel):
     name: Optional[str]
 
     class Config:
-        orm_mode = True
+        from_attributes = True
+
 
 class ExerciseBase(BaseModel):
     name: str
@@ -104,7 +105,7 @@ class ExerciseRead(ExerciseBase):
     tags: List[Tag] = []
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class WorkoutBase(BaseModel):
