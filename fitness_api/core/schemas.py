@@ -108,9 +108,25 @@ class ExerciseRead(ExerciseBase):
         from_attributes = True
 
 
+class WorkoutDateBase(BaseModel):
+    date: date
+
+
+class WorkoutDateCreate(WorkoutDateBase):
+    pass
+
+
+class WorkoutDate(WorkoutDateBase):
+    id: int
+    workout_id: int
+
+    class Config:
+        from_attributes = True
+
+
 class WorkoutBase(BaseModel):
     name: str
-    date: Optional[date]
+    dates: Optional[List[WorkoutDateBase]]
     user_id: int
 
 
@@ -120,8 +136,8 @@ class WorkoutCreate(WorkoutBase):
 
 class Workout(WorkoutBase):
     workout_id: int
-
     exercises: Optional[List["ExerciseRead"]]
+    dates: Optional[List[WorkoutDate]]
 
     class Config:
         from_attributes = True
