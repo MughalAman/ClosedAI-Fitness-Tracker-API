@@ -128,6 +128,7 @@ class Workout(WorkoutBase):
 
 class UserBase(BaseModel):
     name: str
+    profile_pic_url: Optional[str]
     email: str
     height: float
     weight: float
@@ -157,6 +158,7 @@ class UserCreate(BaseModel):
 
 class UserUpdate(BaseModel):
     name: Optional[str] = None
+    profile_pic_url: Optional[str] = None
     email: Optional[str] = None
     height: Optional[float] = None
     weight: Optional[float] = None
