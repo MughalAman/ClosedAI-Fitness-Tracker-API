@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from sqlalchemy.exc import IntegrityError
 from jose import jwt
 from passlib.context import CryptContext
@@ -162,8 +162,9 @@ def get_user_id_from_friend_code(db: Session, friend_code: str):
     )
 
 
-def create_friendship_status(db: Session, 
-                             status: schemas.FriendshipStatusCreate) -> models.FriendshipStatus:
+def create_friendship_status(
+    db: Session, status: schemas.FriendshipStatusCreate
+) -> models.FriendshipStatus:
     db_status = models.FriendshipStatus(name=status.name)
     db.add(db_status)
     db.commit()
@@ -171,9 +172,14 @@ def create_friendship_status(db: Session,
     return db_status
 
 
-def update_friendship_status(db: Session, 
-                             status_id: int, new_status: schemas.FriendshipStatusCreate) -> models.FriendshipStatus:
-    db_status = db.query(models.FriendshipStatus).filter(models.FriendshipStatus.status_id == status_id).first()
+def update_friendship_status(
+    db: Session, status_id: int, new_status: schemas.FriendshipStatusCreate
+) -> models.FriendshipStatus:
+    db_status = (
+        db.query(models.FriendshipStatus)
+        .filter(models.FriendshipStatus.status_id == status_id)
+        .first()
+    )
     if not db_status:
         return None  # Or raise an appropriate exception
     db_status.name = new_status.name
@@ -204,7 +210,9 @@ def delete_friendship_status(db: Session, status_id: int):
     db.commit()
 
 
-def create_friendship(db: Session, friendship: schemas.FriendshipCreate) -> models.Friendship:
+def create_friendship(
+    db: Session, friendship: schemas.FriendshipCreate
+) -> models.Friendship:
     db_friendship = models.Friendship(
         user_id=friendship.user_id,
         friend_id=friendship.friend_id,
@@ -239,14 +247,18 @@ def get_all_friendships_for_user(db: Session, user_id: int):
     )
 
 
-def update_friendships_status(db: Session, 
-                      friendship_id: int, status_id: int) -> models.Friendship:
-    db_friendship = (db.query(models.Friendship)
-                     .filter(models.Friendship.friendship_id == friendship_id).first())
-    
+def update_friendships_status(
+    db: Session, friendship_id: int, status_id: int
+) -> models.Friendship:
+    db_friendship = (
+        db.query(models.Friendship)
+        .filter(models.Friendship.friendship_id == friendship_id)
+        .first()
+    )
+
     if not db_friendship:
         return None
-    
+
     db_friendship.status_id = status_id
     db.commit()
     db.refresh(db_friendship)
@@ -264,12 +276,21 @@ def delete_friendship(db: Session, friendship_id: int):
 
 
 def create_workout(db: Session, workout: schemas.WorkoutCreate):
-    db_workout = models.Workout(**workout.model_dump())
+    db_workout = models.Workout(user_id=workout.user_id, name=workout.name)
     try:
         db.add(db_workout)
         db.commit()
         db.refresh(db_workout)
         logger.debug(f"Created workout {db_workout.workout_id}")
+
+        if workout.dates:
+            for workout_date in workout.dates:
+                db_date = models.WorkoutDate(
+                    workout_id=db_workout.workout_id, date=workout_date.date
+                )
+                db.add(db_date)
+            db.commit()
+            logger.debug(f"Added dates to workout {db_workout.workout_id}")
     except Exception as e:
         logger.error(f"Error creating workout: {e}")
         db.rollback()
@@ -281,6 +302,7 @@ def get_workout(db: Session, workout_id: int):
     try:
         return (
             db.query(models.Workout)
+            .options(joinedload(models.Workout.dates))
             .filter(models.Workout.workout_id == workout_id)
             .first()
         )
@@ -344,7 +366,6 @@ def create_exercise(db: Session, exercise: schemas.ExerciseCreate) -> models.Exe
     db.refresh(new_exercise)
 
     return new_exercise
-
 
 
 def get_exercise(db: Session, exercise_id: int):

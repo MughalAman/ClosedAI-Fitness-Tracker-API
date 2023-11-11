@@ -1,4 +1,13 @@
-from sqlalchemy import Column, Integer, String, Float, ForeignKey, Date, Boolean, UniqueConstraint
+from sqlalchemy import (
+    Column,
+    Integer,
+    String,
+    Float,
+    ForeignKey,
+    Date,
+    Boolean,
+    UniqueConstraint,
+)
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import ENUM, JSON
 from .database import Base
@@ -6,6 +15,7 @@ from .database import Base
 gender_enum = ENUM("MALE", "FEMALE", "OTHER", name="gender_enum_type")
 account_type_enum = ENUM("ADMIN", "USER", name="account_type_enum")
 status_enum = ENUM("PENDING", "ACCEPTED", name="status_enum_type")
+
 
 class User(Base):
     __tablename__ = "user"
@@ -25,6 +35,7 @@ class User(Base):
 
     workouts = relationship("Workout", back_populates="user")
 
+
 # Redesigned Friendship
 class FriendshipStatus(Base):
     __tablename__ = "friendship_status"
@@ -41,13 +52,23 @@ class Friendship(Base):
     friendship_id = Column(Integer, primary_key=True, autoincrement=True)
     user_id = Column(Integer, ForeignKey("user.user_id"), nullable=False)
     friend_id = Column(Integer, ForeignKey("user.user_id"), nullable=False)
-    status_id = Column(Integer, ForeignKey("friendship_status.status_id"), nullable=False)
+    status_id = Column(
+        Integer, ForeignKey("friendship_status.status_id"), nullable=False
+    )
 
     status = relationship("FriendshipStatus", back_populates="friendships")
 
-    __table_args__ = (
-        UniqueConstraint('user_id', 'friend_id', name='uq_friendship'),
-    )
+    __table_args__ = (UniqueConstraint("user_id", "friend_id", name="uq_friendship"),)
+
+
+class WorkoutDate(Base):
+    __tablename__ = "workout_date"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    workout_id = Column(Integer, ForeignKey("workout.workout_id"), nullable=False)
+    date = Column(Date, nullable=False)
+
+    workout = relationship("Workout", back_populates="dates")
 
 
 class Workout(Base):
@@ -55,12 +76,13 @@ class Workout(Base):
 
     workout_id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(50), nullable=False)
-    date = Column(Date, nullable=True)
     user_id = Column(Integer, ForeignKey("user.user_id"), nullable=False)
     is_private = Column(Boolean, nullable=False, default=True)
 
     user = relationship("User", back_populates="workouts")
     exercises = relationship("Exercise", back_populates="workout")
+
+    dates = relationship("WorkoutDate", back_populates="workout")
 
 
 class Tag(Base):
