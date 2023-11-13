@@ -311,11 +311,12 @@ def get_workout(db: Session, workout_id: int):
         raise e
 
 
-def update_workout(db: Session, workout_id: int, workout: schemas.WorkoutCreate):
+def update_workout(db: Session, workout_id: int, workout: schemas.WorkoutUpdate):
     db_workout = get_workout(db, workout_id)
     try:
         for key, value in workout.model_dump().items():
-            setattr(db_workout, key, value)
+            if value is not None:
+                setattr(db_workout, key, value)
         db.commit()
         db.refresh(db_workout)
         logger.debug(f"Updated workout {workout_id}")
@@ -337,6 +338,39 @@ def delete_workout(db: Session, workout_id: int):
         db.rollback()
         raise e
     return db_workout
+
+
+def create_workout_date(db: Session, workout_date: schemas.WorkoutDateCreate):
+    db_date = models.WorkoutDate(
+        workout_id=workout_date.workout_id, date=workout_date.date
+    )
+    try:
+        db.add(db_date)
+        db.commit()
+        db.refresh(db_date)
+        logger.debug(f"Created workout date {db_date.id}")
+    except Exception as e:
+        logger.error(f"Error creating workout date: {e}")
+        db.rollback()
+        raise e
+    return db_date
+
+
+def delete_workout_date(db: Session, workout_date_id: int):
+    db_date = (
+        db.query(models.WorkoutDate)
+        .filter(models.WorkoutDate.id == workout_date_id)
+        .first()
+    )
+    try:
+        db.delete(db_date)
+        db.commit()
+        logger.debug(f"Deleted workout date {workout_date_id}")
+    except Exception as e:
+        logger.error(f"Error deleting workout date {workout_date_id}: {e}")
+        db.rollback()
+        raise e
+    return db_date
 
 
 def create_exercise(db: Session, exercise: schemas.ExerciseCreate) -> models.Exercise:

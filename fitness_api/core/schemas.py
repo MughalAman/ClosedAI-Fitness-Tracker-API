@@ -113,12 +113,11 @@ class WorkoutDateBase(BaseModel):
 
 
 class WorkoutDateCreate(WorkoutDateBase):
-    pass
+    workout_id: int
 
 
 class WorkoutDate(WorkoutDateBase):
     id: int
-    workout_id: int
 
     class Config:
         from_attributes = True
@@ -126,12 +125,16 @@ class WorkoutDate(WorkoutDateBase):
 
 class WorkoutBase(BaseModel):
     name: str
-    dates: Optional[List[WorkoutDateBase]]
     user_id: int
 
 
 class WorkoutCreate(WorkoutBase):
-    pass
+    dates: Optional[List[WorkoutDateBase]]
+
+
+class WorkoutUpdate(BaseModel):
+    name: Optional[str]
+    user_id: Optional[int]
 
 
 class Workout(WorkoutBase):

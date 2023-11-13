@@ -21,10 +21,20 @@ def read_workout(workout_id: int, db: Session = Depends(db_functions.get_databas
 
 
 @router.put("/workout/{workout_id}", response_model=schemas.Workout)
-def update_workout(workout_id: int, workout: schemas.WorkoutCreate, db: Session = Depends(db_functions.get_database)):
+def update_workout(workout_id: int, workout: schemas.WorkoutUpdate, db: Session = Depends(db_functions.get_database)):
     return db_functions.update_workout(db, workout_id, workout)
 
 
 @router.delete("/workout/{workout_id}", response_model=schemas.Workout)
 def delete_workout(workout_id: int, db: Session = Depends(db_functions.get_database)):
     return db_functions.delete_workout(db, workout_id)
+
+
+@router.post("/workout/date/", response_model=schemas.WorkoutDate)
+def create_workout_date(workout_date: schemas.WorkoutDateCreate, db: Session = Depends(db_functions.get_database)):
+    return db_functions.create_workout_date(db, workout_date)
+
+
+@router.delete("/workout/date/{workout_date_id}")
+def delete_workout_date(workout_date_id: int, db: Session = Depends(db_functions.get_database)):
+    return db_functions.delete_workout_date(db, workout_date_id)
