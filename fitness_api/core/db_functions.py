@@ -495,7 +495,7 @@ def delete_rating(db: Session, rating_id: int):
 
 
 def create_tag(db: Session, tag: schemas.TagCreate):
-    new_tag = models.Tag(**tag.dict())
+    new_tag = models.Tag(**tag.model_dump())
     db.add(new_tag)
     db.commit()
     db.refresh(new_tag)
@@ -529,3 +529,36 @@ def delete_tag(db: Session, tag_id: int):
     db.delete(tag)
     db.commit()
     return tag
+
+
+def create_lang(db: Session, lang: schemas.LangCreate):
+    new_lang = models.Lang(**lang.model_dump())
+    db.add(new_lang)
+    db.commit()
+    db.refresh(new_lang)
+    return new_lang
+
+
+def get_lang(db: Session, lang_id: int):
+    return db.query(models.Lang).filter(models.Lang.lang_id == lang_id).first()
+
+
+def update_lang(db: Session, lang_id: int, lang: schemas.LangUpdate):
+    existing_lang = db.query(models.Lang).filter(models.Lang.lang_id == lang_id).first()
+    if not existing_lang:
+        return None
+    for key, value in lang.dict().items():
+        if value is not None:
+            setattr(existing_lang, key, value)
+    db.commit()
+    db.refresh(existing_lang)
+    return existing_lang
+
+
+def delete_lang(db: Session, lang_id: int):
+    lang = db.query(models.Lang).filter(models.Lang.lang_id == lang_id).first()
+    if not lang:
+        return None
+    db.delete(lang)
+    db.commit()
+    return lang

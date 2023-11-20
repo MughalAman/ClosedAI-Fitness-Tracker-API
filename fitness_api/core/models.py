@@ -128,3 +128,11 @@ class Rating(Base):
     exercise_id = Column(Integer, ForeignKey("exercise.exercise_id"), nullable=False)
 
     exercise = relationship("Exercise", back_populates="ratings")
+
+
+class Lang(Base):
+    __tablename__ = "lang"
+
+    lang_id = Column(Integer, primary_key=True, autoincrement=True)
+    ru_RU = Column(JSON)
+    tr_TR = Column(JSON)

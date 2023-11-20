@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import fitness_api.settings as _settings
 from fitness_api.core import logging as _logging
 from fitness_api.core import db_functions
-from fitness_api.routes import token, user, friendship, exercise, workout, rating, tag
+from fitness_api.routes import token, user, friendship, exercise, workout, rating, tag, lang
 
 
 _logging.check_logging_level()
@@ -28,6 +28,7 @@ app.include_router(exercise.router)
 app.include_router(workout.router)
 app.include_router(rating.router)
 app.include_router(tag.router)
+app.include_router(lang.router)
 
 
 if __name__ == "__main__":

@@ -216,3 +216,20 @@ class FriendshipInDB(FriendshipBase):
 
     class Config:
         from_attributes = True
+
+
+class LangCreate(BaseModel):
+    ru_RU: dict
+    tr_TR: dict
+
+
+class LangUpdate(BaseModel):
+    ru_RU: Optional[dict] = None
+    tr_TR: Optional[dict] = None
+
+
+class LangRead(LangCreate):
+    lang_id: int
+
+    class Config:
+        from_attributes = True
