@@ -104,6 +104,7 @@ def create_user(db: Session, user_data: schemas.UserCreate):
         email=user_data.email,
         height=user_data.height,
         weight=user_data.weight,
+        birth_date=user_data.birth_date,
         gender=user_data.gender,
         friend_code=generate_friend_code(db),
         password_hash=get_password_hash(user_data.password),

@@ -176,6 +176,7 @@ class UserCreate(BaseModel):
     height: float
     weight: float
     gender: str
+    birth_date: Optional[date]
 
 
 class UserUpdate(BaseModel):
