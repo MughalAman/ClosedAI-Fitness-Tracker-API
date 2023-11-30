@@ -24,6 +24,7 @@ class User(Base):
     profile_pic_url = Column(String(500))
     name = Column(String(50), nullable=False)
     email = Column(String(255), nullable=False, unique=True)
+    birth_date = Column(Date, nullable=True)
     height = Column(Float, nullable=False)
     weight = Column(Float, nullable=False)
     gender = Column(gender_enum, nullable=False)
@@ -67,6 +68,7 @@ class WorkoutDate(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     workout_id = Column(Integer, ForeignKey("workout.workout_id"), nullable=False)
     date = Column(Date, nullable=False)
+    completed = Column(Boolean, nullable=False, default=False)
 
     workout = relationship("Workout", back_populates="dates")
 

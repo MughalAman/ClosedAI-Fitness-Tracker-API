@@ -110,6 +110,7 @@ class ExerciseRead(ExerciseBase):
 
 class WorkoutDateBase(BaseModel):
     date: date
+    completed: bool
 
 
 class WorkoutDateCreate(WorkoutDateBase):
@@ -153,6 +154,7 @@ class UserBase(BaseModel):
     height: float
     weight: float
     gender: GenderEnum
+    birth_date: Optional[date]
     friend_code: str
     account_type: AccountTypeEnum
     disabled: Optional[bool] = False
