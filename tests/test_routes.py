@@ -36,6 +36,7 @@ def test_create_user():
             "height": 180,
             "weight": 80,
             "gender": "MALE",
+            "birth_date": "1990-01-01"
         },
     )
     assert response.status_code == 200

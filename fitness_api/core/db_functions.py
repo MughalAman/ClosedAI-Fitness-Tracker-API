@@ -16,6 +16,15 @@ import string
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
+def drop_database():
+    try:
+        return database.Base.metadata.drop_all(bind=database.engine)
+    except Exception as e:
+        logger.error(f"Error dropping database: {e}")
+        raise e
+
+
+
 def create_database():
     try:
         return database.Base.metadata.create_all(bind=database.engine)
