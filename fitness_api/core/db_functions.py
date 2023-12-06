@@ -8,7 +8,7 @@ from passlib.context import CryptContext
 from fitness_api.settings import SETTINGS
 
 from . import database, models, schemas
-from fitness_api.core.logging import logger
+from .logging import logger
 
 import random
 import string
