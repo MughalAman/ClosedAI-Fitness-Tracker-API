@@ -2,11 +2,6 @@ import os
 from loguru import logger
 from fitness_api import settings as _settings
 
-def setup_logging():
-    import asyncio
-    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
-setup_logging()
-
 def check_logging_level() -> None:
     """
     checks the logging level based on the IOT_API_DEBUG_LOGGING environment variable
