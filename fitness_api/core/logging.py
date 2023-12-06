@@ -2,8 +2,7 @@ import os
 
 from loguru import logger
 
-import fitness_api.settings as _settings
-
+from fitness_api import settings as _settings
 
 def check_logging_level() -> None:
     """
