@@ -1,6 +1,6 @@
 import os
 
-from loguru import logger
+import loguru
 
 from fitness_api import settings as _settings
 
@@ -9,6 +9,7 @@ def check_logging_level() -> None:
     checks the logging level based on the IOT_API_DEBUG_LOGGING environment variable
     """
     # Define logging level
+    logger = loguru.logger
     logger.remove()
     if _settings.SETTINGS.debug_logging:
         logger.add(os.sys.stderr, level="DEBUG", backtrace=True, diagnose=True)
