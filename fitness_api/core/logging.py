@@ -1,6 +1,6 @@
 import os
-from fitness_api import settings as _settings
 from loguru import logger
+from fitness_api import settings as _settings
 
 def setup_logging():
     import asyncio
