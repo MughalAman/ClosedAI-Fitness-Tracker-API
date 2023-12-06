@@ -2,7 +2,7 @@ import fastapi as _fastapi
 from fastapi.middleware.cors import CORSMiddleware
 
 import fitness_api.settings as _settings
-from fitness_api.core import custom_logging as _logging
+from fitness_api.core import logging as _logging
 from fitness_api.core import db_functions
 from fitness_api.routes import token, user, friendship, exercise, workout, rating, tag, lang
 
