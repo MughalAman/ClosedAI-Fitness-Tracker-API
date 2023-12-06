@@ -1,7 +1,11 @@
 import os
-import asyncio
-from loguru import logger
 from fitness_api import settings as _settings
+from loguru import logger
+
+def setup_logging():
+    import asyncio
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+setup_logging()
 
 def check_logging_level() -> None:
     """
