@@ -35,6 +35,13 @@ def create_workout_date(workout_date: schemas.WorkoutDateCreate, db: Session = D
     return db_functions.create_workout_date(db, workout_date)
 
 
+@router.put("/workout/date/{workout_date_id}", response_model=schemas.WorkoutDate)
+def update_workout_date(workout_date_id: int, 
+                        workout_date: schemas.WorkoutDateUpdate, 
+                        db: Session = Depends(db_functions.get_database)):
+    return db_functions.update_workout_date(db, workout_date_id, workout_date)
+
+
 @router.delete("/workout/date/{workout_date_id}")
 def delete_workout_date(workout_date_id: int, db: Session = Depends(db_functions.get_database)):
     return db_functions.delete_workout_date(db, workout_date_id)

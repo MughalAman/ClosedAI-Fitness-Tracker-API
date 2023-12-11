@@ -117,6 +117,11 @@ class WorkoutDateCreate(WorkoutDateBase):
     workout_id: int
 
 
+class WorkoutDateUpdate(BaseModel):
+    date: Optional[date]
+    completed: Optional[bool]
+
+
 class WorkoutDate(WorkoutDateBase):
     id: int
 
